@@ -148,6 +148,7 @@ class SimpleAntivirus:
                 is_in_quarantine = True
 
             last_notify_id = send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}")
+            print(last_notify_id)
 
         if is_in_quarantine:
             vt_results = self.check_virustotal(quarantine_path, file_hash)
