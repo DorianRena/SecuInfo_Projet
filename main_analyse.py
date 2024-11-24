@@ -3,8 +3,6 @@ import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from  scanner import SimpleAntivirus
-import threading
-import psutil
 
 TEMPORARY_EXTENSIONS = ['.tmp', '.crdownload', '.part', '.download', '.swp']
 
