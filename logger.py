@@ -7,9 +7,17 @@ from typing import Optional
 
 def send_notification(title: str, message: str):
     try:
-        subprocess.run(["notify-send", title, message])
+        return subprocess.run(["notify-send", "-p", title, message], capture_output=True)
     except Exception as e:
         print(f"Error sending notification: {str(e)}")
+        return None
+
+def replace_notification(title: str, message: str, id: str):
+    try:
+        return subprocess.run(["notify-send", "-r", id, title, message], capture_output=True)
+    except Exception as e:
+        print(f"Error sending notification: {str(e)}")
+        return None
 
 class AntivirusLogger:
     def __init__(self, log_dir: str = "logs"):
@@ -51,8 +59,6 @@ class AntivirusLogger:
         self.logger.warning(f"Threat type: {threat_type}")
         if details:
             self.logger.warning(f"Details: {details}")
-
-        send_notification("Threat Detected", f"Threat detected in file: {path}")
 
     def log_error(self, message: str, error: Optional[Exception] = None):
         """Log errors."""

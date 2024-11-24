@@ -8,7 +8,7 @@ from datetime import datetime
 
 from virustotal_client import VirusTotalClient
 from database import Database
-from logger import AntivirusLogger
+from logger import AntivirusLogger, send_notification, replace_notification
 from typing import List, Optional, Dict
 
 from dotenv import load_dotenv
@@ -123,6 +123,8 @@ class SimpleAntivirus:
         original_file_path = filepath
         quarantine_path = None
 
+        last_notify_id = None
+
         # author
         author = self.get_author(filepath)
         if author:
@@ -132,7 +134,7 @@ class SimpleAntivirus:
                 is_in_quarantine = True
                 print(f"MALWARE SUSPECTED (Local Database):")
                 print(f"  Name: {local_match_author['name']}")
-                print(f"  Author : {local_match_author['author']}")
+                last_notify_id = send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}")
 
         # pattern
         suspicious = self.check_patterns(filepath)
@@ -144,6 +146,8 @@ class SimpleAntivirus:
             if not is_in_quarantine:
                 quarantine_path = self.move_to_quarantine(filepath)
                 is_in_quarantine = True
+
+            last_notify_id = send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}")
 
         if is_in_quarantine:
             vt_results = self.check_virustotal(quarantine_path, file_hash)
@@ -157,6 +161,9 @@ class SimpleAntivirus:
             if total_detections == 0:
                 if is_in_quarantine:
                     self.move_to_origine(filepath, original_file_path, original_permissions)
+                    replace_notification("File Clean", f"File clean: {filepath}", last_notify_id)
+                else:
+                    send_notification("File Clean", f"File clean: {filepath}")
 
                 print("No threats detected.")
                 self.logger.log_info("No threats detected.")
@@ -174,6 +181,11 @@ class SimpleAntivirus:
 
                 self.logger.log_threat_detected(filepath, "VirusTotal detection", vt_results)
                 self.display_virustotal_results(vt_results["results"])
+
+                if last_notify_id:
+                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}", last_notify_id)
+                else:
+                    send_notification("Threat Detected", f"Threat detected in file: {filepath}")
 
         if not vt_results and is_in_quarantine:
             self.move_to_origine(filepath, original_file_path, original_permissions)
