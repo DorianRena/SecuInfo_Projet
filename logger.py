@@ -7,7 +7,7 @@ from typing import Optional
 
 def send_notification(title: str, message: str):
     try:
-        return subprocess.run(["notify-send", "-p", title, message], capture_output=True, text=True)
+        return subprocess.run(["notify-send", "-p", title, message], capture_output=True, text=True).stdout
     except Exception as e:
         print(f"Error sending notification: {str(e)}")
         return None
