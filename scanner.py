@@ -1,6 +1,9 @@
 ﻿import os
 import hashlib
 import re
+import shutil
+import stat
+import subprocess
 from datetime import datetime
 
 from virustotal_client import VirusTotalClient
@@ -18,6 +21,9 @@ class SimpleAntivirus:
 
         self.vt_client = VirusTotalClient(os.getenv("API_KEY_VIRUS"))
         print("Clé API :", os.getenv("API_KEY_VIRUS"))
+
+        self.quarantine_dir = os.path.expanduser("~/Quarantine")
+        os.makedirs(self.quarantine_dir, exist_ok=True)
 
     def calculate_file_hash(self, filepath: str) -> Optional[str]:
         """Calculate MD5 hash of a file."""
@@ -47,23 +53,6 @@ class SimpleAntivirus:
              return self.vt_client.scan_file(filepath)
 
          return results
-
-    def check_signatures(self, filepath: str) -> Optional[dict]:
-        """Check if file matches known malware signatures."""
-        file_hash = self.calculate_file_hash(filepath)
-        if file_hash:
-            # Check local database
-            local_match = self.db.get_signature(file_hash)
-            if local_match:
-                self.logger.log_threat_detected(filepath, "Local signature match", local_match)
-                return {"source": "local", "match": local_match}
-
-            # Check VirusTotal
-            vt_results = self.check_virustotal(filepath, file_hash)
-            if vt_results:
-                self.logger.log_threat_detected(filepath, "VirusTotal detection", vt_results)
-                return {"source": "virustotal", "match": vt_results}
-        return None
 
     def check_patterns(self, filepath: str) -> List[str]:
         """Check file for suspicious patterns."""
@@ -114,49 +103,82 @@ class SimpleAntivirus:
         self.logger.log_info(f"File size: {size} bytes")
         print(f"File size: {size} bytes")
 
-        # Check signatures
-        signature_match = self.check_signatures(filepath)
-        if signature_match:
-            if signature_match["source"] == "local":
-                match = signature_match["match"]
-                threat_info = {
-                    "name": match['name'],
-                    "description": match['description'],
-                    "severity": match['severity']
-                }
-                self.logger.log_threat_detected(filepath, "Local database match", threat_info)
-                print(f"⚠️ MALWARE DETECTED (Local Database):")
-                print(f"  Name: {match['name']}")
-                print(f"  Description: {match['description']}")
-                print(f"  Severity: {match['severity'].upper()}")
-            elif signature_match["source"] == "virustotal":
-                match = signature_match["match"]
-                self.display_virustotal_results(match["results"])
+        # local check
+        file_hash = self.calculate_file_hash(filepath)
+        if not file_hash:
+            return
 
-                total_detections = sum(1 for engine in match["results"].values() if engine["category"] == "malicious")
+        local_match_signature = self.db.get_signature(file_hash)
+        if local_match_signature:
+            self.logger.log_threat_detected(filepath, "Local signature match", local_match_signature)
+            print(f"MALWARE DETECTED (Local Database):")
+            print(f"  Name: {local_match_signature['name']}")
+            print(f"  Severity: {local_match_signature['severity'].upper()}")
 
-                if total_detections > 0:
-                    self.logger.log_threat_detected(filepath, "VirusTotal detection", match["results"])
+            self.move_to_quarantine(filepath)
+            return
 
-                    print("⚠️ MALWARE DETECTED (VirusTotal)")
+        is_in_quarantine = False
+        original_permissions = os.stat(filepath).st_mode
+        original_file_path = filepath
+        quarantine_path = None
 
-                    self.db.add_signature(
-                        match["hash-md5"],
-                        filepath,
-                        "Virus Total analysis",
-                        "high"
-                    )
+        # author
+        author = self.get_author(filepath)
+        if author:
+            local_match_author = self.db.get_signature_by_author(author)
+            if local_match_author:
+                quarantine_path = self.move_to_quarantine(filepath)
+                is_in_quarantine = True
+                print(f"MALWARE SUSPECTED (Local Database):")
+                print(f"  Name: {local_match_author['name']}")
+                print(f"  Author : {local_match_author['author']}")
+
+        # pattern
+        suspicious = self.check_patterns(filepath)
+        if suspicious:
+            print("Suspicious patterns found:")
+            for pattern in suspicious:
+                print(f"  - {pattern}")
+
+            if not is_in_quarantine:
+                quarantine_path = self.move_to_quarantine(filepath)
+                is_in_quarantine = True
+
+        if is_in_quarantine:
+            vt_results = self.check_virustotal(quarantine_path, file_hash)
         else:
-            # Check patterns
-            suspicious = self.check_patterns(filepath)
-            if suspicious:
-                print("⚠️ Suspicious patterns found:")
-                for pattern in suspicious:
-                    print(f"  - {pattern}")
-            else:
-                self.logger.log_info(f"No threats detected in {filepath}")
-                print("✅ No threats detected")
+            vt_results = self.check_virustotal(filepath, file_hash)
 
+        if vt_results:
+            total_detections = vt_results["stats"]["malicious"] + vt_results["stats"]["suspicious"]
+
+            # Gestion en fonction du résultat de l'analyse
+            if total_detections == 0:
+                if is_in_quarantine:
+                    self.move_to_origine(filepath, original_file_path, original_permissions)
+
+                print("No threats detected.")
+                self.logger.log_info("No threats detected.")
+            else:
+                # Déplacer en quarantaine si le fichier est dangereux ou suspect
+                if not is_in_quarantine:
+                    self.move_to_quarantine(filepath)
+
+                self.db.add_signature(
+                    vt_results["hash-md5"],
+                    filepath,
+                    author if author else "Unknown",
+                    "high"
+                )
+
+                self.logger.log_threat_detected(filepath, "VirusTotal detection", vt_results)
+                self.display_virustotal_results(vt_results["results"])
+
+        if not vt_results and is_in_quarantine:
+            self.move_to_origine(filepath, original_file_path, original_permissions)
+
+        print(f"Scan complete for: {filepath}")
         self.logger.log_scan_complete(filepath)
 
     def scan_directory(self, directory: str) -> None:
@@ -179,3 +201,30 @@ class SimpleAntivirus:
         self.logger.log_info(f"Directory scan completed. Duration: {duration}")
         print(f"\nScan completed at: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"Total scan duration: {duration}")
+
+    def move_to_quarantine(self, file_path):
+        """ Fonction pour déplacer le fichier en quarantaine """
+        quarantine_path = os.path.join(self.quarantine_dir, os.path.basename(file_path))
+        shutil.move(file_path, quarantine_path)
+        os.chmod(quarantine_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP)
+        self.logger.log_info(f"File moved to quarantine: {quarantine_path}")
+        return quarantine_path
+
+    def move_to_origine(self, file_path, original_file_path, original_permissions):
+        """ Fonction pour déplacer le fichier vers son répertoire d'origine """
+        shutil.move(file_path, original_file_path)
+        os.chmod(original_file_path, original_permissions)
+        self.logger.log_info(f"File moved back to original location: {original_file_path}")
+
+    def get_author(self, file_path):
+        """ Fonction pour récupérer les métadonnées du fichier avec exiftool """
+        try:
+            result = subprocess.run(['exiftool', file_path], capture_output=True, text=True)
+            metadata = result.stdout
+            author = None
+            for line in metadata.splitlines():
+                if "Creator" in line or "Author" in line:
+                    author = line.split(":")[1].strip()
+            return author
+        except Exception as e:
+            return None

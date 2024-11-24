@@ -187,7 +187,6 @@ class AntivirusGUI:
     def scan_path(self, path: str):
         """Scan a file or directory."""
         self.logger.log_info(f"GUI initiated scan for: {path}")
-        self.log_output(f"\nScanning: {path}")
         if os.path.isfile(path):
             self.redirect_output(lambda: self.scanner.scan_file(path))
         else:
