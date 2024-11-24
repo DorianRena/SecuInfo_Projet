@@ -134,7 +134,7 @@ class SimpleAntivirus:
                 is_in_quarantine = True
                 print(f"MALWARE SUSPECTED (Local Database):")
                 print(f"  Name: {local_match_author['name']}")
-                last_notify_id = send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}")
+                last_notify_id = int(send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}"))
 
         # pattern
         suspicious = self.check_patterns(filepath)
@@ -147,7 +147,7 @@ class SimpleAntivirus:
                 quarantine_path = self.move_to_quarantine(filepath)
                 is_in_quarantine = True
 
-            last_notify_id = send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}")
+            last_notify_id = int(send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}"))
             print(last_notify_id)
 
         if is_in_quarantine:
@@ -163,7 +163,7 @@ class SimpleAntivirus:
                 if is_in_quarantine:
                     self.move_to_origine(quarantine_path, filepath, original_permissions)
                     print(last_notify_id)
-                    replace_notification("File Clean", f"File clean: {filepath}", last_notify_id)
+                    replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
                 else:
                     send_notification("File Clean", f"File clean: {filepath}")
 
@@ -185,13 +185,13 @@ class SimpleAntivirus:
                 self.display_virustotal_results(vt_results["results"])
 
                 if last_notify_id:
-                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}", last_notify_id)
+                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}", str(last_notify_id))
                 else:
                     send_notification("Threat Detected", f"Threat detected in file: {filepath}")
 
         if not vt_results and is_in_quarantine:
             self.move_to_origine(quarantine_path, filepath, original_permissions)
-            replace_notification("File Clean", f"File clean: {filepath}", last_notify_id)
+            replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
 
         print(f"Scan complete for: {filepath}")
         self.logger.log_scan_complete(filepath)
