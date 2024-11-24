@@ -162,6 +162,7 @@ class SimpleAntivirus:
             if total_detections == 0:
                 if is_in_quarantine:
                     self.move_to_origine(quarantine_path, filepath, original_permissions)
+                    print(last_notify_id)
                     replace_notification("File Clean", f"File clean: {filepath}", last_notify_id)
                 else:
                     send_notification("File Clean", f"File clean: {filepath}")

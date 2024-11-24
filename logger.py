@@ -14,10 +14,9 @@ def send_notification(title: str, message: str):
 
 def replace_notification(title: str, message: str, id_notif: str):
     try:
-        return subprocess.run(["notify-send", "-r", id_notif, title, message], capture_output=True)
+        subprocess.run(["notify-send", "-r", id_notif, title, message])
     except Exception as e:
         print(f"Error sending notification: {str(e)}")
-        return None
 
 class AntivirusLogger:
     def __init__(self, log_dir: str = "logs"):
