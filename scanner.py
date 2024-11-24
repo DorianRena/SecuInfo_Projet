@@ -116,6 +116,7 @@ class SimpleAntivirus:
             print(f"  Severity: {local_match_signature['severity'].upper()}")
 
             self.move_to_quarantine(filepath)
+            send_notification("Threat Detected", f"Threat detected in file: {filepath}")
             return
 
         is_in_quarantine = False
