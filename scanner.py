@@ -148,7 +148,6 @@ class SimpleAntivirus:
                 is_in_quarantine = True
 
             last_notify_id = int(send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}"))
-            print(last_notify_id)
 
         if is_in_quarantine:
             vt_results = self.check_virustotal(quarantine_path, file_hash)
@@ -162,12 +161,12 @@ class SimpleAntivirus:
             if total_detections == 0:
                 if is_in_quarantine:
                     self.move_to_origine(quarantine_path, filepath, original_permissions)
-                    print(last_notify_id)
                     replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
+                    print("No threats detected. File restored.")
                 else:
                     send_notification("File Clean", f"File clean: {filepath}")
+                    print("No threats detected.")
 
-                print("No threats detected.")
                 self.logger.log_info("No threats detected.")
             else:
                 # Déplacer en quarantaine si le fichier est dangereux ou suspect
