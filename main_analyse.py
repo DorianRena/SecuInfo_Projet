@@ -45,7 +45,7 @@ class DownloadScanner(FileSystemEventHandler):
 
 def main():
     # Répertoire à surveiller (par défaut, répertoire Téléchargements)
-    downloads_dir = os.path.expanduser("~/Téléchargements")
+    downloads_dir = os.path.expanduser("~/Downloads")
     if not os.path.exists(downloads_dir):
         print(f"Le répertoire {downloads_dir} n'existe pas.")
         return
