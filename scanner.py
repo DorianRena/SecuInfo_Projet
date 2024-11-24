@@ -121,7 +121,6 @@ class SimpleAntivirus:
 
         is_in_quarantine = False
         original_permissions = os.stat(filepath).st_mode
-        original_file_path = filepath
         quarantine_path = None
 
         last_notify_id = None
@@ -161,7 +160,7 @@ class SimpleAntivirus:
             # Gestion en fonction du résultat de l'analyse
             if total_detections == 0:
                 if is_in_quarantine:
-                    self.move_to_origine(filepath, original_file_path, original_permissions)
+                    self.move_to_origine(quarantine_path, filepath, original_permissions)
                     replace_notification("File Clean", f"File clean: {filepath}", last_notify_id)
                 else:
                     send_notification("File Clean", f"File clean: {filepath}")
@@ -189,7 +188,7 @@ class SimpleAntivirus:
                     send_notification("Threat Detected", f"Threat detected in file: {filepath}")
 
         if not vt_results and is_in_quarantine:
-            self.move_to_origine(filepath, original_file_path, original_permissions)
+            self.move_to_origine(quarantine_path, filepath, original_permissions)
 
         print(f"Scan complete for: {filepath}")
         self.logger.log_scan_complete(filepath)
