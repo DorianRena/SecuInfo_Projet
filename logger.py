@@ -7,14 +7,14 @@ from typing import Optional
 
 def send_notification(title: str, message: str):
     try:
-        return subprocess.run(["notify-send", "-p", title, message], capture_output=True)
+        return subprocess.run(["notify-send", "-p", title, message], capture_output=True, text=True)
     except Exception as e:
         print(f"Error sending notification: {str(e)}")
         return None
 
-def replace_notification(title: str, message: str, id: str):
+def replace_notification(title: str, message: str, id_notif: str):
     try:
-        return subprocess.run(["notify-send", "-r", id, title, message], capture_output=True)
+        return subprocess.run(["notify-send", "-r", id_notif, title, message], capture_output=True)
     except Exception as e:
         print(f"Error sending notification: {str(e)}")
         return None
