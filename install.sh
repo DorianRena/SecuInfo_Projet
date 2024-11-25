@@ -15,6 +15,7 @@ if ! grep -Fq "$CRON_JOB" mycron; then
   echo "$CRON_JOB" >> mycron
   crontab mycron
   echo "Cron job added: $CRON_JOB"
+  nohup python3 "$(pwd)/main_analyse.py" > main_analyse.log 2>&1 &
 else
   echo "Cron job already exists, skipping..."
 fi
@@ -22,7 +23,4 @@ fi
 # Clean up
 rm -f mycron
 
-clear
-
 echo "Installation terminée"
-python3 main_analyse.py &
