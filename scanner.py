@@ -51,6 +51,8 @@ class SimpleAntivirus:
          if not results:
              self.logger.log_info(f"File not found in VirusTotal database. Submitting {filepath} for analysis...")
              return self.vt_client.scan_file(filepath)
+         else:
+             self.logger.log_info(f"File found in VirusTotal database.")
 
          return results
 
