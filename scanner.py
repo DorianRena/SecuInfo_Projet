@@ -20,7 +20,6 @@ class SimpleAntivirus:
         self.logger = AntivirusLogger()
 
         self.vt_client = VirusTotalClient(os.getenv("API_KEY_VIRUS"))
-        print("Clé API :", os.getenv("API_KEY_VIRUS"))
 
         self.quarantine_dir = os.path.expanduser("~/Quarantine")
         os.makedirs(self.quarantine_dir, exist_ok=True)
