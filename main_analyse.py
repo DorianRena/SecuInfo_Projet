@@ -42,10 +42,16 @@ class DownloadScanner(FileSystemEventHandler):
                 print(f"Le fichier {file_path} n'est plus disponible. Il a peut-être été déplacé ou supprimé.")
                 break
 
+def find_downloads_dir():
+    if os.path.exists(os.path.expanduser("~/Downloads")):
+        return os.path.expanduser("~/Downloads")
+    elif os.path.exists(os.path.expanduser("~/Téléchargements")):
+        return os.path.expanduser("~/Téléchargements")
+
 
 def main():
     # Répertoire à surveiller (par défaut, répertoire Téléchargements)
-    downloads_dir = os.path.expanduser("~/Téléchargements")
+    downloads_dir = find_downloads_dir()
     if not os.path.exists(downloads_dir):
         print(f"Le répertoire {downloads_dir} n'existe pas.")
         return
