@@ -43,6 +43,13 @@ class AntivirusLogger:
 
         self.logger = logging.getLogger("antivirus")
         self.logger.info("Logging initialized")
+        self.remove_old_logs(10)
+
+    def remove_old_logs(self, max_logs: int = 5):
+        """Remove old log files to keep log directory clean."""
+        log_files = sorted([f for f in os.listdir(self.log_dir) if f.endswith(".log")], reverse=True)
+        for log_file in log_files[max_logs:]:
+            os.remove(os.path.join(self.log_dir, log_file))
 
     def log_scan_start(self, path: str):
         """Log the start of a scan operation."""

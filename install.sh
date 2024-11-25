@@ -27,8 +27,8 @@ rm -f mycron
 if [ ! -f .env ]; then
   echo ".env file not found. You can get your VirusTotal API key here : https://www.virustotal.com/gui/my-apikey"
   echo "Please enter your VirusTotal API key:"
-  read -r VT_API_KEY
-  echo "VT_API_KEY=$VT_API_KEY" > .env
+  read -r API_KEY_VIRUS
+  echo "API_KEY_VIRUS=$API_KEY_VIRUS" > .env
   echo ".env file created with your VirusTotal API key."
 else
   echo ".env file already exists, skipping..."
