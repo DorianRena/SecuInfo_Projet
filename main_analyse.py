@@ -47,6 +47,8 @@ def find_downloads_dir():
         return os.path.expanduser("~/Downloads")
     elif os.path.exists(os.path.expanduser("~/Téléchargements")):
         return os.path.expanduser("~/Téléchargements")
+    else:
+        return os.path.expanduser("~")
 
 
 def main():
