@@ -10,17 +10,25 @@ class DownloadScanner(FileSystemEventHandler):
     def __init__(self):
         # Initialize scanner
         self.scanner = SimpleAntivirus()
+        self.last_file = None
         
     def on_created(self, event):
         # Appelé au téléchargement
         if not event.is_directory:
             file_path = event.src_path
             print(f"Fichier détecté : {file_path}")
+
+            if self.last_file == file_path:
+                print(f"Fichier déjà traité : {file_path}")
+                self.last_file = None
+                return
             
             # Vérifier si le fichier est en téléchargement (nom temporaire)
             if not any(file_path.endswith(ext) for ext in TEMPORARY_EXTENSIONS):
                 print(f"Le fichier a été renommé ou est complet : {file_path}")
                 self.wait_for_file_end(file_path)
+
+            self.last_file = file_path
 
     def wait_for_file_end(self, file_path):
         # Attendre que le fichier soit stable
