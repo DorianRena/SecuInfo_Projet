@@ -22,5 +22,7 @@ fi
 # Clean up
 rm -f mycron
 
+clear
+
 echo "Installation terminée"
-python3 main_analyse.py
+python3 main_analyse.py &
