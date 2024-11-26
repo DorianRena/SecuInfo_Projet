@@ -19,6 +19,9 @@ class SimpleAntivirus:
         self.db = Database()
         self.logger = AntivirusLogger()
 
+        if not os.getenv("API_KEY_VIRUS"):
+            self.logger.log_error("VirusTotal API key not found. VirusTotal checks will be disabled.")
+
         self.vt_client = VirusTotalClient(os.getenv("API_KEY_VIRUS"))
 
         self.quarantine_dir = os.path.expanduser("~/Quarantine")
@@ -165,6 +168,8 @@ class SimpleAntivirus:
 
             # Gestion en fonction du résultat de l'analyse
             if total_detections == 0:
+                self.logger.log_info("No threats detected.")
+
                 if is_in_quarantine:
                     self.move_to_origine(quarantine_path, filepath, original_permissions)
                     replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
@@ -173,7 +178,6 @@ class SimpleAntivirus:
                     send_notification("File Clean", f"File clean: {filepath}")
                     print("No threats detected.")
 
-                self.logger.log_info("No threats detected.")
             else:
                 # Déplacer en quarantaine si le fichier est dangereux ou suspect
                 if not is_in_quarantine:
