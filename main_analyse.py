@@ -29,8 +29,6 @@ class DownloadScanner(FileSystemEventHandler):
                 print(f"Le fichier a été renommé ou est complet : {file_path}")
                 self.wait_for_file_end(file_path)
 
-            self.last_file = file_path
-
     def wait_for_file_end(self, file_path):
         # Attendre que le fichier soit stable
         print(f"Vérification de la taille du fichier {file_path}...")
@@ -44,6 +42,8 @@ class DownloadScanner(FileSystemEventHandler):
                     sys.stdout = None
                     if self.scanner.scan_file(file_path):
                         self.last_file = None
+                    else:
+                        self.last_file = file_path
                     sys.stdout = sys.__stdout__
                     break
                 else:
