@@ -199,9 +199,9 @@ class SimpleAntivirus:
                 self.display_virustotal_results(vt_results["results"])
 
                 if last_notify_id:
-                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}", str(last_notify_id))
+                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {quarantine_path}", str(last_notify_id))
                 else:
-                    send_notification("Threat Detected", f"Threat detected in file: {filepath}")
+                    send_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {quarantine_path}")
 
         if not vt_results and is_in_quarantine:
             self.move_to_origine(quarantine_path, filepath, original_permissions)
