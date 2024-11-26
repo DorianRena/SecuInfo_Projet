@@ -1,3 +1,4 @@
+import sys
 import time
 import os
 from watchdog.observers import Observer
@@ -40,7 +41,9 @@ class DownloadScanner(FileSystemEventHandler):
                 current_size = os.path.getsize(file_path)
                 if current_size == initial_size and current_size!=0:
                     print(f"Fichier en téléchargement détecté : {file_path}")
+                    sys.stdout = None
                     self.scanner.scan_file(file_path)
+                    sys.stdout = sys.__stdout__
                     break
                 else:
                     print(f"Le fichier est encore en téléchargement. Taille actuelle : {current_size} octets.")
