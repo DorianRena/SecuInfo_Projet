@@ -36,7 +36,7 @@ class VirusTotalClient:
 
                     result = self.get_analysis_results(analysis_id)
                     if result and result["status"] == "completed":
-                        return result
+                        return self.scan_hash(result["hash-md5"])
 
                     time.sleep(5)  # Wait before checking again
 
@@ -59,7 +59,8 @@ class VirusTotalClient:
                     "status": "completed",
                     "stats": data["data"]["attributes"]["last_analysis_stats"],
                     "results": data["data"]["attributes"]["last_analysis_results"] if "last_analysis_results" in data["data"]["attributes"] else None,
-                    "hash-md5": data["data"]["attributes"]["md5"]
+                    "hash-md5": data["data"]["attributes"]["md5"],
+                    "full_data": data["data"],
                 }
             elif response.status_code == 404:
                 return None
@@ -84,7 +85,9 @@ class VirusTotalClient:
                 "status": result_analysis["status"],
                 "stats": result_analysis["stats"],
                 "results": result_analysis["results"] if "results" in result_analysis else None,
-                "hash-md5": data["meta"]["file_info"]["md5"]
+                "hash-md5": data["meta"]["file_info"]["md5"],
+                "full_data": data["data"],
+                "file_metadata": data["meta"]
             }
         except Exception as e:
             print(f"Error getting analysis results: {e}")

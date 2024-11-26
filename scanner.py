@@ -164,10 +164,15 @@ class SimpleAntivirus:
         if vt_results:
             self.save_virustotal_results(vt_results, filepath)
 
-            total_detections = vt_results["stats"]["malicious"] + vt_results["stats"]["suspicious"]
+            # virus total : virus detection algorithm
+            virus_total_detections = vt_results["stats"]["malicious"] + vt_results["stats"]["suspicious"]
+
+            crowdsource_detections = 0
+            if "crowdsourced_ids_stats" in vt_results["full_data"]["attributes"]:
+                crowdsource_detections = vt_results["full_data"]["attributes"]["crowdsourced_ids_stats"]["high"]
 
             # Gestion en fonction du résultat de l'analyse
-            if total_detections == 0:
+            if virus_total_detections == 0 and crowdsource_detections == 0:
                 self.logger.log_info(f"VirusTotal do not detect any threats in {filepath}")
 
                 if is_in_quarantine:
