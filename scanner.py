@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class SimpleAntivirus:
-    def __init__(self):
+    def __init__(self, result_dir: str = "results"):
         self.db = Database()
         self.logger = AntivirusLogger()
 
@@ -23,6 +23,9 @@ class SimpleAntivirus:
 
         self.quarantine_dir = os.path.expanduser("~/Quarantine")
         os.makedirs(self.quarantine_dir, exist_ok=True)
+
+        self.result_dir = result_dir
+        os.makedirs(self.result_dir, exist_ok=True)
 
     def calculate_file_hash(self, filepath: str) -> Optional[str]:
         """Calculate MD5 hash of a file."""
@@ -156,6 +159,8 @@ class SimpleAntivirus:
             vt_results = self.check_virustotal(filepath, file_hash)
 
         if vt_results:
+            self.save_virustotal_results(vt_results, filepath)
+
             total_detections = vt_results["stats"]["malicious"] + vt_results["stats"]["suspicious"]
 
             # Gestion en fonction du résultat de l'analyse
@@ -243,3 +248,10 @@ class SimpleAntivirus:
             return author
         except Exception as e:
             return None
+
+    def save_virustotal_results(self, vt_result, filepath: str):
+        """ Fonction pour enregistrer les résultats de l'analyse VirusTotal """
+        filename = os.path.basename(filepath)
+
+        with open(os.path.join(self.result_dir, f"vt_{filename}.json"), "w") as f:
+            f.write(str(vt_result))
