@@ -168,7 +168,7 @@ class SimpleAntivirus:
 
             # Gestion en fonction du résultat de l'analyse
             if total_detections == 0:
-                self.logger.log_info("No threats detected.")
+                self.logger.log_info(f"VirusTotal do not detect any threats in {filepath}")
 
                 if is_in_quarantine:
                     self.move_to_origine(quarantine_path, filepath, original_permissions)
