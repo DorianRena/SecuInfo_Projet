@@ -162,7 +162,7 @@ class SimpleAntivirus:
             vt_results = self.check_virustotal(filepath, file_hash)
 
         if vt_results:
-            self.save_virustotal_results(vt_results, filepath)
+            vt_result_analyse_path = self.save_virustotal_results(vt_results, filepath)
 
             # virus total : virus detection algorithm
             virus_total_detections = vt_results["stats"]["malicious"] + vt_results["stats"]["suspicious"]
@@ -195,7 +195,7 @@ class SimpleAntivirus:
                     "high"
                 )
 
-                self.logger.log_threat_detected(filepath, "VirusTotal detection", vt_results)
+                self.logger.log_threat_detected(filepath, "VirusTotal detection", dict(analyse_result_path=vt_result_analyse_path))
                 self.display_virustotal_results(vt_results["results"])
 
                 if last_notify_id:
@@ -264,3 +264,5 @@ class SimpleAntivirus:
 
         with open(os.path.join(self.result_dir, f"vt_{filename}.json"), "w") as f:
             f.write(str(vt_result))
+
+        return os.path.join(self.result_dir, f"vt_{filename}.json")
