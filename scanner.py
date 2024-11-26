@@ -95,7 +95,7 @@ class SimpleAntivirus:
                     print(f"  - {detection_info}")
                     self.logger.log_info(f"VirusTotal detection: {detection_info}")
 
-    def scan_file(self, filepath: str) -> None:
+    def scan_file(self, filepath: str) -> bool:
         """Scan a single file."""
         self.logger.log_scan_start(filepath)
         print(f"\nScanning: {filepath}")
@@ -103,7 +103,7 @@ class SimpleAntivirus:
         if not os.path.exists(filepath):
             self.logger.log_error(f"File not found: {filepath}")
             print("File not found!")
-            return
+            return False
 
         # Check file size
         size = os.path.getsize(filepath)
@@ -113,7 +113,7 @@ class SimpleAntivirus:
         # local check
         file_hash = self.calculate_file_hash(filepath)
         if not file_hash:
-            return
+            return False
 
         local_match_signature = self.db.get_signature(file_hash)
         if local_match_signature:
@@ -123,8 +123,8 @@ class SimpleAntivirus:
             print(f"  Severity: {local_match_signature['severity'].upper()}")
 
             self.move_to_quarantine(filepath)
-            send_notification("Threat Detected", f"Threat detected in file: {filepath}")
-            return
+            send_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {self.quarantine_dir}")
+            return True
 
         is_in_quarantine = False
         original_permissions = os.stat(filepath).st_mode
@@ -187,6 +187,7 @@ class SimpleAntivirus:
                 # Déplacer en quarantaine si le fichier est dangereux ou suspect
                 if not is_in_quarantine:
                     self.move_to_quarantine(filepath)
+                    is_in_quarantine = True
 
                 self.db.add_signature(
                     vt_results["hash-md5"],
@@ -199,9 +200,9 @@ class SimpleAntivirus:
                 self.display_virustotal_results(vt_results["results"])
 
                 if last_notify_id:
-                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {quarantine_path}", str(last_notify_id))
+                    replace_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {self.quarantine_dir}", str(last_notify_id))
                 else:
-                    send_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {quarantine_path}")
+                    send_notification("Threat Detected", f"Threat detected in file: {filepath}, move to: {self.quarantine_dir}")
 
         if not vt_results and is_in_quarantine:
             self.move_to_origine(quarantine_path, filepath, original_permissions)
@@ -209,6 +210,8 @@ class SimpleAntivirus:
 
         print(f"Scan complete for: {filepath}")
         self.logger.log_scan_complete(filepath)
+
+        return is_in_quarantine
 
     def scan_directory(self, directory: str) -> None:
         """Scan all files in a directory."""

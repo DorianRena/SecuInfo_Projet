@@ -42,7 +42,8 @@ class DownloadScanner(FileSystemEventHandler):
                 if current_size == initial_size and current_size!=0:
                     print(f"Fichier en téléchargement détecté : {file_path}")
                     sys.stdout = None
-                    self.scanner.scan_file(file_path)
+                    if self.scanner.scan_file(file_path):
+                        self.last_file = None
                     sys.stdout = sys.__stdout__
                     break
                 else:
