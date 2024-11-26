@@ -207,6 +207,7 @@ class SimpleAntivirus:
         if not vt_results and is_in_quarantine:
             self.move_to_origine(quarantine_path, filepath, original_permissions)
             replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
+            is_in_quarantine = False
 
         print(f"Scan complete for: {filepath}")
         self.logger.log_scan_complete(filepath)
