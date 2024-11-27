@@ -129,6 +129,7 @@ class SimpleAntivirus:
         is_in_quarantine = False
         original_permissions = os.stat(filepath).st_mode
         quarantine_path = None
+        has_change_folder = False
 
         last_notify_id = None
 
@@ -179,6 +180,7 @@ class SimpleAntivirus:
                     self.move_to_origine(quarantine_path, filepath, original_permissions)
                     replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
                     print("No threats detected. File restored.")
+                    has_change_folder = True
                 else:
                     send_notification("File Clean", f"File clean: {filepath}")
                     print("No threats detected.")
@@ -207,12 +209,12 @@ class SimpleAntivirus:
         if not vt_results and is_in_quarantine:
             self.move_to_origine(quarantine_path, filepath, original_permissions)
             replace_notification("File Clean", f"File clean: {filepath}", str(last_notify_id))
-            is_in_quarantine = False
+            has_change_folder = True
 
         print(f"Scan complete for: {filepath}")
         self.logger.log_scan_complete(filepath)
 
-        return is_in_quarantine
+        return has_change_folder
 
     def scan_directory(self, directory: str) -> None:
         """Scan all files in a directory."""

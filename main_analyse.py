@@ -41,9 +41,9 @@ class DownloadScanner(FileSystemEventHandler):
                     print(f"Fichier en téléchargement détecté : {file_path}")
                     sys.stdout = None
                     if self.scanner.scan_file(file_path):
-                        self.last_file = None
-                    else:
                         self.last_file = file_path
+                    else:
+                        self.last_file = None
                     sys.stdout = sys.__stdout__
                     break
                 else:
