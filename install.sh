@@ -33,3 +33,16 @@ if [ ! -f .env ]; then
 else
   echo ".env file already exists, skipping..."
 fi
+
+# setup application
+cp pta_icon.png /usr/share/icons/
+cp Analyse.sh "/home/$(whoami)/"
+echo "[Desktop Entry]
+Type=Application
+Name=Petrificus Totalus
+Exec=/home/$(whoami)/Analyse.sh
+Terminal=true
+Icon=/usr/share/icons/pta_icon.png
+Comment=Lancer le script main_analyse.py avec l'environnement virtuel
+Categories=Development;
+" > /usr/share/applications/PetrificusTotalus.desktop
