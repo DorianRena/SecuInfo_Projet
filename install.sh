@@ -37,7 +37,7 @@ fi
 # setup application
 sudo cp pta_icon.png /usr/share/icons/
 cp Analyse.sh "/home/$(whoami)/"
-echo "python3 $(pwd)/main_analyse.py" > "/home/$(whoami)/Analyse.sh"
+echo "python3 $(pwd)/main_ui.py" > "/home/$(whoami)/Analyse.sh"
 chmod +x "/home/$(whoami)/Analyse.sh"
 echo "[Desktop Entry]
 Type=Application
