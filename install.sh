@@ -35,7 +35,7 @@ else
 fi
 
 # setup application
-cp pta_icon.png /usr/share/icons/
+sudo cp pta_icon.png /usr/share/icons/
 cp Analyse.sh "/home/$(whoami)/"
 echo "[Desktop Entry]
 Type=Application
@@ -45,4 +45,5 @@ Terminal=true
 Icon=/usr/share/icons/pta_icon.png
 Comment=Lancer le script main_analyse.py avec l'environnement virtuel
 Categories=Development;
-" > /usr/share/applications/PetrificusTotalus.desktop
+" > PetrificusTotalus.desktop
+sudo mv PetrificusTotalus.desktop /usr/share/applications/PetrificusTotalus.desktop
