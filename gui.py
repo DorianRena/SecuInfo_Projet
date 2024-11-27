@@ -11,7 +11,7 @@ from logger import AntivirusLogger
 class AntivirusGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Simple Python Antivirus")
+        self.root.title("Petrificus Totalus Antivirus")
         self.root.geometry("800x600")
 
         # Initialize logger
