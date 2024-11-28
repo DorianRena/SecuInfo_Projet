@@ -142,7 +142,7 @@ class SimpleAntivirus:
                 is_in_quarantine = True
                 print(f"MALWARE SUSPECTED (Local Database):")
                 print(f"  Name: {local_match_author['name']}")
-                last_notify_id = int(send_notification("Suspicious File Detected", f"Suspicious file detected: {filepath}"))
+                last_notify_id = int(send_notification("Suspicious File Detected", f"Suspicious file move to quarantine detected: {filepath}, due to suspicious author: {author}"))
 
         # pattern
         suspicious = self.check_patterns(filepath)
